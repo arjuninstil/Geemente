@@ -15,6 +15,8 @@ import datetime
 TOKEN = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
+print(TOKEN, CHAT_ID)
+
 
 def is_real_appointment(date_time_text):
     """Return True only for actual bookable slots, not waitlist placeholders."""
