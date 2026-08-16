@@ -114,8 +114,6 @@ try:
         send_telegram_message(message)
     else:
         print("No available dates found. No message sent.")
-        message = f"Dates available!\nAvailable at:\nNone\nMessage sent at: {current_time}"
-        send_telegram_message(message)
 
 finally:
     driver.quit()
