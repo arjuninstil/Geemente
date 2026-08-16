@@ -7,11 +7,16 @@ import time
 import requests 
 import urllib.parse 
 import datetime
+import os
+
+# Safely get environment variables
+TOEKN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
 # Function to send a Telegram message
 def send_telegram_message(message):
-    bot_token = '8968926811:AAEduM3RXFH8DjFFE7QfFBVlOO5srge8_zE'  # Replace with your bot token
-    chat_ids = ['8818555435'] #, add more than one if you want to]
+    bot_token = TOKEN  # Replace with your bot token
+    chat_ids = [CHAT_ID] #, add more than one if you want to]
     
 
 
