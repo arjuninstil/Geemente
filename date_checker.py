@@ -1,4 +1,5 @@
-from selenium import webdriver 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By 
 from selenium.webdriver.support.ui import WebDriverWait 
 from selenium.webdriver.support import expected_conditions as EC 
@@ -12,6 +13,19 @@ import os
 # Safely get environment variables
 TOEKN = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+
+
+# Configure Chrome options
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--remote-debugging-port=9222")
+
+# Use the system chromium-browser
+driver = webdriver.Chrome(options=chrome_options)
+
 
 # Function to send a Telegram message
 def send_telegram_message(message):
