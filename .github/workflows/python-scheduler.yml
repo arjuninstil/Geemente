@@ -2,8 +2,9 @@ name: Run Python Script Every 15 Minutes
 
 on:
   schedule:
+    # Runs every 15 minutes
     - cron: "*/15 * * * *"
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
   run-script:
@@ -11,21 +12,18 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.11"
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
 
       - name: Install dependencies
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        run: pip install -r requirements.txt
 
       - name: Run Python script
         run: python date_checker.py
