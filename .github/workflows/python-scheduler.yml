@@ -12,8 +12,8 @@ jobs:
     env:
       # Map repository secrets into environment variables expected by the script
       # Add these secrets in your repository settings -> Secrets
-      TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TOKEN: ${{ secrets.TOKEN }}
+      CHAT_ID: ${{ secrets.CHAT_ID }}
 
     steps:
       - name: Checkout repository
