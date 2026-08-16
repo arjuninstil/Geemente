@@ -1,0 +1,31 @@
+name: Run Python Script Every 15 Minutes
+
+on:
+  schedule:
+    # Runs every 15 minutes
+    - cron: "*/15 * * * *"
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      # Step 3: Install dependencies (if you have a requirements.txt)
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # Step 4: Run your Python script
+      - name: Run Python script
+        run: python date_checker.py
