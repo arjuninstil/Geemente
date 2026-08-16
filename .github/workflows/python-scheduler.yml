@@ -9,6 +9,11 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    env:
+      # Map repository secrets into environment variables expected by the script
+      # Add these secrets in your repository settings -> Secrets
+      TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
     steps:
       - name: Checkout repository
