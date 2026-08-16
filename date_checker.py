@@ -12,8 +12,8 @@ import urllib.parse
 import datetime
 
 # Safely get environment variables
-TOKEN = "8968926811:AAEduM3RXFH8DjFFE7QfFBVlOO5srge8_zE"#os.getenv("TOKEN")
-CHAT_ID = "8818555435"#os.getenv("CHAT_ID")
+TOKEN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
 print(TOKEN, CHAT_ID)
 
