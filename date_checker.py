@@ -1,31 +1,61 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By 
-from selenium.webdriver.support.ui import WebDriverWait 
-from selenium.webdriver.support import expected_conditions as EC 
-from bs4 import BeautifulSoup 
-import time 
-import requests 
-import urllib.parse 
-import datetime
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
 import os
+import re
+import time
+import requests
+import urllib.parse
+import datetime
 
 # Safely get environment variables
-TOEKN = os.getenv("TOKEN")
+TOKEN = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
 
-# Configure Chrome options
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--remote-debugging-port=9222")
+def is_real_appointment(date_time_text):
+    """Return True only for actual bookable slots, not waitlist placeholders."""
+    text = date_time_text.lower().strip()
+    if not text:
+        return False
+    if "wachtrij" in text:
+        return False
+    # Real slots contain a date or time (e.g. "20 januari 2025" or "10:00")
+    return bool(re.search(r"\d", text))
 
-# Use the system chromium-browser
-driver = webdriver.Chrome(options=chrome_options)
 
+def collect_available_dates(soup):
+    date_buttons = soup.find_all("button", class_="list-group-item-action")
+    available_dates = []
+
+    for date_button in date_buttons:
+        if date_button.get("disabled") is not None:
+            continue
+        location_el = date_button.find("h3")
+        date_time_el = date_button.find("p")
+        if not location_el or not date_time_el:
+            continue
+
+        location = location_el.get_text(strip=True)
+        date_time = date_time_el.get_text(strip=True)
+        if is_real_appointment(date_time):
+            available_dates.append(f"{location}: {date_time}")
+
+    return available_dates
+
+
+def create_driver():
+    options = Options()
+    if os.getenv("GITHUB_ACTIONS") == "true" or os.getenv("CI"):
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1920,1080")
+    return webdriver.Chrome(options=options)
 
 # Function to send a Telegram message
 def send_telegram_message(message):
@@ -49,7 +79,7 @@ def send_telegram_message(message):
 
 
 # Selenium 4+ auto-downloads the matching ChromeDriver for your installed Chrome
-driver = webdriver.Chrome()
+driver = create_driver()
 
 # Open the local HTML file or directly access the URL if it's online
 driver.get("https://concern.ir.rotterdam.nl/afspraak/maken/product/indienen-naturalisatieverzoek") 
@@ -72,49 +102,16 @@ try:
     # Parse the updated HTML content with BeautifulSoup
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-    # Look for all buttons with class 'list-group-item-action' and not disabled
-    available_dates = soup.find_all('button', class_='list-group-item-action')
+    available_dates = collect_available_dates(soup)
+    print("available_dates:", available_dates)
 
-    alert_no_dates = soup.find_all('div', class_='alert-warning')
-
-    print("alert_no_dates: ", alert_no_dates)
-
-
-    print(available_dates)
-    
-    if len(alert_no_dates) == 0:
-        print("No available dates alert found.")
-        message_first_part="No available dates alert found."
-    else:
-        message_first_part= "Found something."
-
-
-    if len(available_dates) == 0:
-        # Initialize a list to collect all available dates
-        date_info_list = []
-
-        for date_button in available_dates:
-            if date_button.get('disabled') is None:
-                location = date_button.find('h3').text.strip()
-                date_time = date_button.find('p').text.strip()
-                # Add each location and date/time to the list
-                date_info_list.append(f"{location}: {date_time}")
-
-        # Combine all date information into a single string with line breaks
-        date_info = "\n".join(date_info_list)
-
-        # Create the final message
-        message = f"{message_first_part}\nAvailable at:\n{date_info}\nMessage Sent at: {current_time}"
+    if available_dates:
+        date_info = "\n".join(available_dates)
+        message = f"Dates available!\nAvailable at:\n{date_info}\nMessage sent at: {current_time}"
         print(message)
-
-        # Send the message via Telegram
         send_telegram_message(message)
     else:
-        print("No alert - No available dates found.")
-
-        # Create the message indicating no available dates
-        message = f"{message_first_part}\nNo available dates found.\nMessage Sent at: {current_time}"
-        #send_telegram_message(message) # Comment this out if you dont want to get messages when there is no dates
+        print("No available dates found. No message sent.")
 
 finally:
     driver.quit()
